@@ -1,0 +1,13 @@
+name = "examples"
+description = "Shiny new project"
+version = "0.1.0-dev"
+
+authors = ["Fabien Chouteau"]
+maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
+maintainers-logins = ["Fabien-Chouteau"]
+
+executables = ["examples"]
+[[depends-on]]
+nael = "~0.1.0-dev"
+[[pins]]
+nael = { path='..' }
