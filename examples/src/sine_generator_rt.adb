@@ -19,7 +19,7 @@ package body Sine_Generator_RT is
    is
    begin
       This.Freq_Slider := User_Contols.Add_Slider ("Frequency (Hz)",
-                                                   50.0, 1_000.0, 1.0,
+                                                   50.0, 10_000.0, 1.0,
                                                    Default => 440.0);
 
       This.Amp_Slider := User_Contols.Add_Slider ("Amplitude",

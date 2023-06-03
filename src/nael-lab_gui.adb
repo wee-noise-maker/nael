@@ -12,6 +12,7 @@ with Gtk.Oscilloscope.Sweeper_Panel; use Gtk.Oscilloscope.Sweeper_Panel;
 with Gtk.Scale;          use Gtk.Scale;
 with Gtk.Enums;          use Gtk.Enums;
 with Gtk.Combo_Box_Text; use Gtk.Combo_Box_Text;
+with Gtk.Combo_Box;      use Gtk.Combo_Box;
 with Gtk.GRange;         use Gtk.GRange;
 with Glib; use Glib;
 with Glib.Main;
@@ -92,11 +93,13 @@ package body Nael.Lab_GUI is
       Id          :        Controller_Id;
       Ctrl        :        User_Control_Info;
       Exchange    : in out Value_Exchange.Instance;
-      Scale_CB    :        Cb_Gtk_Range_Void)
+      Scale_CB    :        Cb_Gtk_Range_Void;
+      Combo_CB    :        Cb_Gtk_Combo_Box_Void)
    is
       Frame : Gtk_Frame;
 
       Addr : Integer_Address;
+
    begin
       Gtk_New (Frame, To_String (Ctrl.Name));
       Frame.Set_Border_Width (3);
@@ -135,7 +138,12 @@ package body Nael.Lab_GUI is
                   Drop.Append_Text (Elt);
                end loop;
 
+               Drop.Set_Active (0);
+
                Frame.Add (Drop);
+
+               Drop.On_Changed (Combo_CB);
+
                Addr := To_Integer (Drop.all'Address);
             end;
       end case;
@@ -151,6 +159,9 @@ package body Nael.Lab_GUI is
    task body GUI_Task is
       Window : Gtk_Window;
       Graphs_Frame : Gtk_Frame;
+
+      Graphs_Vbox : Gtk_Vbox;
+
       User_Controls_Frame : Gtk_Frame;
       User_Controls_Vbox : Gtk_Vbox;
       Pane   : Gtk_HBox;
@@ -160,6 +171,9 @@ package body Nael.Lab_GUI is
       Osc : Gtk_Oscilloscope;
       Osc_Chan : Gtk.Oscilloscope.Channel_Number;
       Addr_To_Id  : Address_To_Controller_Id_Map.Map;
+
+      Analyser : Gtk_Oscilloscope;
+      Analyser_Chan : Gtk.Oscilloscope.Channel_Number;
 
       Exchange : Value_Exchange.Any_Access;
 
@@ -174,13 +188,25 @@ package body Nael.Lab_GUI is
          Exchange.Set (Id, Float (Self.Get_Value));
       end Scale_Callback;
 
+      --------------------
+      -- Combo_Callback --
+      --------------------
+
+      procedure Combo_Callback (Self : access Gtk_Combo_Box_Record'Class) is
+         Int_Addr : constant Integer_Address := To_Integer (Self.all'Address);
+         Id : Constant Controller_Id := Addr_To_Id.Element (Int_Addr);
+      begin
+         Exchange.Set (Id, Float (Self.Get_Active));
+      end Combo_Callback;
+
    begin
 
       accept Start
         (Lab           :   in out Instance'Class;
          User_Controls :          User_Control_Setup'Class;
          Exchange      : not null Value_Exchange.Any_Access;
-         Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope)
+         Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope;
+         Analyser      :      out Gtk.Oscilloscope.Gtk_Oscilloscope)
       do
          Gtk.Main.Init;
 
@@ -198,8 +224,39 @@ package body Nael.Lab_GUI is
          Pane.Pack_Start (Graphs_Frame, True, True);
          Graphs_Frame.Set_Border_Width (3);
 
-         Gtk_New (Osc, Refresh_Period => 0.02);
-         Graphs_Frame.Add (Osc);
+         Gtk_New_Vbox (Graphs_Vbox);
+         Graphs_Frame.Add (Graphs_Vbox);
+
+         Gtk_New (Osc, Refresh_Period => 0.2);
+         Graphs_Vbox.Add (Osc);
+
+         declare
+         begin
+            Gtk_New (Analyser, Refresh_Period => 0.2);
+            Graphs_Vbox.Add (Analyser);
+
+            --  Current bin energy
+            Analyser_Chan := Analyser.Add_Channel;
+            --  Peak bin energy
+            Analyser_Chan := Analyser.Add_Channel;
+
+            Analyser.Set_Manual_Sweep (False);
+            --
+            -- Configuring the lower axis
+            --
+            Analyser.Set_Frozen     (Lower, True);  -- No sweeping
+            Analyser.Set_Time_Scale (Lower, False); -- No scale
+            Analyser.Set_Time_Grid  (Lower, True);  -- Grid
+            Analyser.Set_Time_Axis  (Lower, True, False);
+            Analyser.Get_Sweeper (Lower).Configure
+              (Value          => 0.0,
+               Lower          => 0.0,
+               Upper          => 1.0,
+               Step_Increment => 0.1,
+               Page_Increment => 5.0,
+               Page_Size      => Gdouble (Analyser_FFT_Size / 2)
+              );
+         end;
 
          Gtk_New (User_Controls_Frame, "Controls");
          Pane.Pack_Start (User_Controls_Frame, False, False);
@@ -243,13 +300,15 @@ package body Nael.Lab_GUI is
                               Index,
                               User_Controls.Controls.Element (Index),
                               Exchange.all,
-                              Scale_CB => Scale_Callback'Unrestricted_Access);
+                              Scale_CB => Scale_Callback'Unrestricted_Access,
+                              Combo_CB => Combo_Callback'Unrestricted_Access);
          end loop;
 
          Osc_Chan := Osc.Add_Channel;
 
          GUI_Task.Exchange := Exchange;
          Oscillo := Osc;
+         GUI_Task.Analyser := Analyser;
       end Start;
 
       Window.Show_All;
@@ -264,13 +323,15 @@ package body Nael.Lab_GUI is
    -- Start --
    -----------
 
-   procedure Start (This          :   in out Instance;
-                    User_Controls :          User_Control_Setup'Class;
-                    Exchange      : not null Value_Exchange.Any_Access;
-                    Oscillo       :      out Gtk_Oscilloscope)
+   procedure Start
+     (This          :   in out Instance;
+      User_Controls :          User_Control_Setup'Class;
+      Exchange      : not null Value_Exchange.Any_Access;
+      Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope;
+      Analyser      :      out Gtk.Oscilloscope.Gtk_Oscilloscope)
    is
    begin
-      This.GUI_T.Start (This, User_Controls, Exchange, Oscillo);
+      This.GUI_T.Start (This, User_Controls, Exchange, Oscillo, Analyser);
    end Start;
 
    ------------

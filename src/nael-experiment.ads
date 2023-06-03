@@ -8,8 +8,8 @@ package Nael.Experiment is
    private;
 
    function Setup
-     (This         : in out Instance;
-      User_Contols : in out Nael.Lab_GUI.User_Control_Setup'Class)
+     (This          : in out Instance;
+      User_Controls : in out Nael.Lab_GUI.User_Control_Setup'Class)
       return Boolean
    is (True);
 

@@ -40,8 +40,15 @@ package body Nael.Audio_Backend is
       if User_Callback /= null then
          User_Callback.all (Float_Frames);
 
+         --  Clamp signal
          for Index in Float_Frames'Range loop
-            Sample := S16 (Float_Frames (Index) * Float (S16'Last));
+            if Float_Frames (Index) > 1.0 then
+               Sample := S16'Last;
+            elsif Float_Frames (Index) < -1.0 then
+               Sample := S16'First;
+            else
+               Sample := S16 (Float_Frames (Index) * Float (S16'Last));
+            end if;
 
             Out_Buffer (Index).L := Sample;
             Out_Buffer (Index).R := Sample;

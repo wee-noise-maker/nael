@@ -33,7 +33,8 @@ package Nael.Lab_GUI is
      (This          :   in out Instance;
       User_Controls :          User_Control_Setup'Class;
       Exchange      : not null Value_Exchange.Any_Access;
-      Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope);
+      Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope;
+      Analyser      :      out Gtk.Oscilloscope.Gtk_Oscilloscope);
 
    function Closed (This : Instance) return Boolean;
 
@@ -66,7 +67,8 @@ private
         (Lab           :   in out Instance'Class;
          User_Controls :          User_Control_Setup'Class;
          Exchange      : not null Value_Exchange.Any_Access;
-         Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope);
+         Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope;
+         Analyser      :      out Gtk.Oscilloscope.Gtk_Oscilloscope);
    end GUI_Task;
 
    function Hash (Key : System.Storage_Elements.Integer_Address)
