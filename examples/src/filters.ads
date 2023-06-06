@@ -1,13 +1,21 @@
 with Nael.Experiment;
 with Nael.Lab_GUI;
 with Nael.Value_Exchange;
+with Nael.Sample_Reader;
 
 package Filters is
 
    type Instance is new Nael.Experiment.Instance with record
-      Kind_Drop        : Nael.Controller_Id;
-      Noise_Amp_Slider : Nael.Controller_Id;
-      Alpha_Slider     : Nael.Controller_Id;
+      Input_Drop   : Nael.Controller_Id;
+      Kind_Drop    : Nael.Controller_Id;
+      Lvl_Slider   : Nael.Controller_Id;
+
+      Alpha_Slider : Nael.Controller_Id;
+
+      Freq_Slider  : Nael.Controller_Id;
+      Q_Slider     : Nael.Controller_Id;
+
+      Sample : Nael.Sample_Reader.Instance;
    end record;
 
    overriding
@@ -19,7 +27,7 @@ package Filters is
    overriding
    procedure Render (This        : in out Instance;
                      Sample_Rate :        Natural;
-                     Buffer      :    out Nael.Framebuffer;
+                     Buffer      :    out Nael.Block;
                      Values      : in out Nael.Value_Exchange.Instance);
 
 private

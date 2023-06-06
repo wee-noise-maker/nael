@@ -11,3 +11,5 @@ executables = ["examples"]
 nael = "~0.1.0-dev"
 [[pins]]
 nael = { path='..' }
+[[depends-on]]
+resources = "~0.1.0"

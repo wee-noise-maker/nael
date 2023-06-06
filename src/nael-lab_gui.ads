@@ -1,8 +1,7 @@
 with AAA.Strings;
 
 with Nael.Value_Exchange;
-
-with Gtk.Oscilloscope;
+with Nael.Frame_Exchange;
 
 private with Ada.Strings.Unbounded;
 private with Ada.Containers.Indefinite_Vectors;
@@ -30,11 +29,11 @@ package Nael.Lab_GUI is
    private;
 
    procedure Start
-     (This          :   in out Instance;
-      User_Controls :          User_Control_Setup'Class;
-      Exchange      : not null Value_Exchange.Any_Access;
-      Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope;
-      Analyser      :      out Gtk.Oscilloscope.Gtk_Oscilloscope);
+     (This           :   in out Instance;
+      Sample_Rate    :          Natural;
+      User_Controls  :          User_Control_Setup'Class;
+      Exchange       : not null Value_Exchange.Any_Access;
+      Block_Exchange : not null Frame_Exchange.Any_Access);
 
    function Closed (This : Instance) return Boolean;
 
@@ -64,11 +63,11 @@ private
 
    task type GUI_Task is
       entry Start
-        (Lab           :   in out Instance'Class;
-         User_Controls :          User_Control_Setup'Class;
-         Exchange      : not null Value_Exchange.Any_Access;
-         Oscillo       :      out Gtk.Oscilloscope.Gtk_Oscilloscope;
-         Analyser      :      out Gtk.Oscilloscope.Gtk_Oscilloscope);
+        (Lab            :   in out Instance'Class;
+         Sample_Rate    :          Natural;
+         User_Controls  :          User_Control_Setup'Class;
+         Exchange       : not null Value_Exchange.Any_Access;
+         Block_Exchange : not null Frame_Exchange.Any_Access);
    end GUI_Task;
 
    function Hash (Key : System.Storage_Elements.Integer_Address)
@@ -92,7 +91,6 @@ private
    is tagged limited
            record
               GUI_T             : GUI_Task;
-              Audio_Out_Channel : Gtk.Oscilloscope.Channel_Number;
            end record;
 
 end Nael.Lab_GUI;

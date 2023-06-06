@@ -7,5 +7,5 @@ procedure Examples is
    Filters_Exp : aliased Filters.Instance;
 begin
    Nael.Runner.Run (Filters_Exp);
---   Nael.Runner.Run (Sine_Exp);
+   --  Nael.Runner.Run (Sine_Exp);
 end Examples;

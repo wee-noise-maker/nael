@@ -35,7 +35,7 @@ package body Sine_Generator_RT is
    overriding
    procedure Render (This        : in out Instance;
                      Sample_Rate :        Natural;
-                     Buffer      :    out Nael.Framebuffer;
+                     Buffer      :    out Nael.Block;
                      Values      : in out Nael.Value_Exchange.Instance)
    is
       Frequency : Float := 220.0; -- Frequency of the sine wave in Hz

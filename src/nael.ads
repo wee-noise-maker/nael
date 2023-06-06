@@ -2,7 +2,8 @@ package Nael is
 
    subtype Mono_Frame is Float;
 
-   type Framebuffer is array (Natural range <>) of Mono_Frame;
+   type Block is array (Natural range <>) of Mono_Frame;
+   type Block_Access is access all Block;
 
    type Controller_Id is range 1 .. 1000;
 

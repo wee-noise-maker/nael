@@ -30,7 +30,7 @@ package body Nael.Audio_Backend is
       Out_Buffer : Stereo_Buffer (1 .. Natural (Frames))
         with Address => Buf;
 
-      Float_Frames : Framebuffer (Out_Buffer'Range);
+      Float_Frames : Block (Out_Buffer'Range);
 
       subtype S16 is Interfaces.Integer_16;
 

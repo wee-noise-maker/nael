@@ -12,7 +12,9 @@ project Examples is
    end Linker;
 
    package Compiler is
-      for Default_Switches ("Ada") use Examples_Config.Ada_Compiler_Switches;
+      for Default_Switches ("Ada") use
+        Examples_Config.Ada_Compiler_Switches &
+         ("-gnateE");
    end Compiler;
 
    package Binder is

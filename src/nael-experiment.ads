@@ -15,7 +15,7 @@ package Nael.Experiment is
 
    procedure Render (This        : in out Instance;
                      Sample_Rate :        Natural;
-                     Buffer      :    out Framebuffer;
+                     Buffer      :    out Block;
                      Values      : in out Value_Exchange.Instance)
    is abstract;
 
