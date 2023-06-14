@@ -16,8 +16,12 @@ with Glib.Main;
 
 with System.Storage_Elements; use System.Storage_Elements;
 
-with Nael.Lab_GUI.Spectrum_Analyser_Widget; use Nael.Lab_GUI.Spectrum_Analyser_Widget;
+with Nael.Lab_GUI.Spectrum_Analyser_Widget;
+use Nael.Lab_GUI.Spectrum_Analyser_Widget;
 with Nael.Lab_GUI.Oscilloscope_Widget; use Nael.Lab_GUI.Oscilloscope_Widget;
+with Nael.Lab_GUI.Keyboard_Widget; use Nael.Lab_GUI.Keyboard_Widget;
+with Nael.Lab_GUI.Pianoroll_Widget; use Nael.Lab_GUI.Pianoroll_Widget;
+with Gtk.Widget; use Gtk.Widget;
 
 package body Nael.Lab_GUI is
 
@@ -41,6 +45,23 @@ package body Nael.Lab_GUI is
                              return Boolean
    is (A = B);
 
+   ---------------------
+   -- Enable_Keyboard --
+   ---------------------
+
+   procedure Enable_Keyboard (This : in out User_Control_Setup) is
+   begin
+      This.Keyboard_Enabled := True;
+   end Enable_Keyboard;
+
+   ----------------------
+   -- Enable_Pianoroll --
+   ----------------------
+
+   procedure Enable_Pianoroll (This : in out User_Control_Setup) is
+   begin
+      This.Pianoroll_Enabled := True;
+   end Enable_Pianoroll;
    ----------------
    -- Add_Slider --
    ----------------
@@ -168,8 +189,11 @@ package body Nael.Lab_GUI is
       Exchange : Value_Exchange.Any_Access;
       Block_Exchange : Frame_Exchange.Any_Access;
 
-      Spectrum : Nael.Lab_GUI.Spectrum_Analyser_Widget.Spectrum_Analyser;
+      Spectrum     : Nael.Lab_GUI.Spectrum_Analyser_Widget.Spectrum_Analyser;
       Oscilloscope : Nael.Lab_GUI.Oscilloscope_Widget.Oscilloscope;
+      Keyboard     : Nael.Lab_GUI.Keyboard_Widget.Keyboard;
+      Pianoroll    : Nael.Lab_GUI.Pianoroll_Widget.Pianoroll;
+
 
       --------------------
       -- Scale_Callback --
@@ -218,11 +242,11 @@ package body Nael.Lab_GUI is
    begin
 
       accept Start
-        (Lab            :   in out Instance'Class;
-         Sample_Rate    :          Natural;
+        (Sample_Rate    :          Natural;
          User_Controls  :          User_Control_Setup'Class;
-         Exchange       : not null Value_Exchange.Any_Access;
-         Block_Exchange : not null Frame_Exchange.Any_Access)
+         Exchange       : not null Nael.Value_Exchange.Any_Access;
+         Block_Exchange : not null Nael.Frame_Exchange.Any_Access;
+         MIDI_Exchange  : not null Nael.MIDI_Exchange.Any_Access)
       do
          Gtk.Main.Init;
 
@@ -242,13 +266,36 @@ package body Nael.Lab_GUI is
          Graphs_Frame.Add (Graphs_Vbox);
 
          --  Spectrum Analyser
+         Gtk_New (Frame, "Spectrum Analyzer");
+         Graphs_Vbox.Pack_Start (Frame, Expand => True);
          Gtk_New (Spectrum, Sample_Rate);
-         Graphs_Vbox.Add (Spectrum);
+         Frame.Add (Spectrum);
          ---------------------
 
          --  Oscilloscope
+         Gtk_New (Frame, "Oscilloscope");
+         Graphs_Vbox.Pack_Start (Frame, Expand => True);
          Gtk_New (Oscilloscope, Sample_Rate);
-         Graphs_Vbox.Add (Oscilloscope);
+         Frame.Add (Oscilloscope);
+         ----------------
+
+         --  Pianoroll
+         if User_Controls.Pianoroll_Enabled then
+            Gtk_New (Frame, "Piano Roll");
+            Graphs_Vbox.Add (Frame);
+            Gtk_New (Pianoroll, MIDI_Exchange);
+            Frame.Add (Pianoroll);
+         end if;
+         -------------
+
+         --  Keyboard
+         if User_Controls.Keyboard_Enabled then
+            Gtk_New (Frame, "Keyboard");
+            Graphs_Vbox.Pack_Start (Frame, Expand => False);
+
+            Gtk_New (Keyboard, MIDI_Exchange);
+            Frame.Add (Keyboard);
+         end if;
          ----------------
 
          Gtk_New (User_Controls_Frame, "Controls");
@@ -300,12 +347,13 @@ package body Nael.Lab_GUI is
      (This           :   in out Instance;
       Sample_Rate    :          Natural;
       User_Controls  :          User_Control_Setup'Class;
-      Exchange       : not null Value_Exchange.Any_Access;
-      Block_Exchange : not null Frame_Exchange.Any_Access)
+      Exchange       : not null Nael.Value_Exchange.Any_Access;
+      Block_Exchange : not null Nael.Frame_Exchange.Any_Access;
+      MIDI_Exchange  : not null Nael.MIDI_Exchange.Any_Access)
    is
    begin
-      This.GUI_T.Start (This, Sample_Rate, User_Controls,
-                        Exchange, Block_Exchange);
+      This.GUI_T.Start (Sample_Rate, User_Controls,
+                        Exchange, Block_Exchange, MIDI_Exchange);
    end Start;
 
    ------------

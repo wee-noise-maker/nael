@@ -1,7 +1,7 @@
 with Ada.Numerics; use Ada.Numerics;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
-package body Sine_Generator_RT is
+package body Bela_Sine_Generator_RT is
 
    --  G_Total_Sample : Natural := 0; -- How many samples have gone by?
 
@@ -36,7 +36,8 @@ package body Sine_Generator_RT is
    procedure Render (This        : in out Instance;
                      Sample_Rate :        Natural;
                      Buffer      :    out Nael.Block;
-                     Values      : in out Nael.Value_Exchange.Instance)
+                     Values      : in out Nael.Value_Exchange.Instance;
+                     MIDI_Input  : in out Nael.MIDI_Exchange.Instance)
    is
       Frequency : Float := 220.0; -- Frequency of the sine wave in Hz
       Amplitude : Float := 0.6; -- Amplitude of the sine wave (1.0 max)
@@ -62,4 +63,4 @@ package body Sine_Generator_RT is
       end loop;
    end Render;
 
-end Sine_Generator_RT;
+end Bela_Sine_Generator_RT;

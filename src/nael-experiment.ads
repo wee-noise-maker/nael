@@ -1,5 +1,6 @@
 with Nael.Lab_GUI;
 with Nael.Value_Exchange;
+with Nael.MIDI_Exchange;
 
 package Nael.Experiment is
 
@@ -16,7 +17,8 @@ package Nael.Experiment is
    procedure Render (This        : in out Instance;
                      Sample_Rate :        Natural;
                      Buffer      :    out Block;
-                     Values      : in out Value_Exchange.Instance)
+                     Values      : in out Nael.Value_Exchange.Instance;
+                     MIDI_Input  : in out Nael.MIDI_Exchange.Instance)
    is abstract;
 
 private

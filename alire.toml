@@ -12,3 +12,5 @@ aaa = "~0.2.6"
 
 [environment.'case(distribution)'.msys2.CPLUS_INCLUDE_PATH]
 append = "${DISTRIB_ROOT}/mingw64/include"
+[[depends-on]]
+midi = "~0.2.0"

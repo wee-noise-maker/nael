@@ -1,8 +1,9 @@
 with Nael.Experiment;
 with Nael.Lab_GUI;
 with Nael.Value_Exchange;
+with Nael.MIDI_Exchange;
 
-package Sine_Generator_RT is
+package Bela_Sine_Generator_RT is
 
    type Instance is new Nael.Experiment.Instance with record
       Freq_Slider : Nael.Controller_Id;
@@ -19,6 +20,7 @@ package Sine_Generator_RT is
    procedure Render (This        : in out Instance;
                      Sample_Rate :        Natural;
                      Buffer      :    out Nael.Block;
-                     Values      : in out Nael.Value_Exchange.Instance);
+                     Values      : in out Nael.Value_Exchange.Instance;
+                     MIDI_Input  : in out Nael.MIDI_Exchange.Instance);
 
-end Sine_Generator_RT;
+end Bela_Sine_Generator_RT;

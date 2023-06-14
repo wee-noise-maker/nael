@@ -2,6 +2,7 @@ with AAA.Strings;
 
 with Nael.Value_Exchange;
 with Nael.Frame_Exchange;
+with Nael.MIDI_Exchange;
 
 private with Ada.Strings.Unbounded;
 private with Ada.Containers.Indefinite_Vectors;
@@ -12,6 +13,9 @@ package Nael.Lab_GUI is
 
    type User_Control_Setup
    is tagged limited private;
+
+   procedure Enable_Keyboard (This : in out User_Control_Setup);
+   procedure Enable_Pianoroll (This : in out User_Control_Setup);
 
    function Add_Slider (This           : in out User_Control_Setup;
                         Name           :        String;
@@ -32,8 +36,9 @@ package Nael.Lab_GUI is
      (This           :   in out Instance;
       Sample_Rate    :          Natural;
       User_Controls  :          User_Control_Setup'Class;
-      Exchange       : not null Value_Exchange.Any_Access;
-      Block_Exchange : not null Frame_Exchange.Any_Access);
+      Exchange       : not null Nael.Value_Exchange.Any_Access;
+      Block_Exchange : not null Nael.Frame_Exchange.Any_Access;
+      MIDI_Exchange  : not null Nael.MIDI_Exchange.Any_Access);
 
    function Closed (This : Instance) return Boolean;
 
@@ -59,15 +64,17 @@ private
    type User_Control_Setup
    is tagged limited record
       Controls : User_Control_Info_Vectors.Vector;
+      Keyboard_Enabled : Boolean := False;
+      Pianoroll_Enabled : Boolean := False;
    end record;
 
    task type GUI_Task is
       entry Start
-        (Lab            :   in out Instance'Class;
-         Sample_Rate    :          Natural;
+        (Sample_Rate    :          Natural;
          User_Controls  :          User_Control_Setup'Class;
-         Exchange       : not null Value_Exchange.Any_Access;
-         Block_Exchange : not null Frame_Exchange.Any_Access);
+         Exchange       : not null Nael.Value_Exchange.Any_Access;
+         Block_Exchange : not null Nael.Frame_Exchange.Any_Access;
+         MIDI_Exchange  : not null Nael.MIDI_Exchange.Any_Access);
    end GUI_Task;
 
    function Hash (Key : System.Storage_Elements.Integer_Address)

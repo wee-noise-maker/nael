@@ -5,7 +5,7 @@ with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 
 with Examples_Ressources; use Examples_Ressources;
 
-package body Filters is
+package body Bela_Filters is
 
    -- First example ----------------------------------------------------------
    type First_Example_Filter is record
@@ -159,7 +159,8 @@ package body Filters is
    procedure Render (This        : in out Instance;
                      Sample_Rate :        Natural;
                      Buffer      :    out Nael.Block;
-                     Values      : in out Nael.Value_Exchange.Instance)
+                     Values      : in out Nael.Value_Exchange.Instance;
+                     MIDI_Input  : in out Nael.MIDI_Exchange.Instance)
    is
       Input_Kind : constant Natural := Natural (Values.Get (This.Input_Drop));
       Kind       : constant Natural := Natural (Values.Get (This.Kind_Drop));
@@ -194,4 +195,4 @@ package body Filters is
       end loop;
    end Render;
 
-end Filters;
+end Bela_Filters;
