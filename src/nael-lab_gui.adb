@@ -3,14 +3,14 @@ with Ada.Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Gtk.Main;
-with Gtk.Window;         use Gtk.Window;
-with Gtk.Frame;          use Gtk.Frame;
-with Gtk.Box;            use Gtk.Box;
-with Gtk.Scale;          use Gtk.Scale;
-with Gtk.Enums;          use Gtk.Enums;
-with Gtk.Combo_Box_Text; use Gtk.Combo_Box_Text;
-with Gtk.Combo_Box;      use Gtk.Combo_Box;
-with Gtk.GRange;         use Gtk.GRange;
+with Gtk.Window;          use Gtk.Window;
+with Gtk.Frame;           use Gtk.Frame;
+with Gtk.Box;             use Gtk.Box;
+with Gtk.Scale;           use Gtk.Scale;
+with Gtk.Enums;           use Gtk.Enums;
+with Gtk.Combo_Box_Text;  use Gtk.Combo_Box_Text;
+with Gtk.Combo_Box;       use Gtk.Combo_Box;
+with Gtk.GRange;          use Gtk.GRange;
 with Glib; use Glib;
 with Glib.Main;
 
@@ -62,6 +62,7 @@ package body Nael.Lab_GUI is
    begin
       This.Pianoroll_Enabled := True;
    end Enable_Pianoroll;
+
    ----------------
    -- Add_Slider --
    ----------------
@@ -132,9 +133,9 @@ package body Nael.Lab_GUI is
                Gtk_New_With_Range
                  (Scale,
                   Orientation => Gtk.Enums.Orientation_Horizontal,
-                  Min         => GDouble (Ctrl.Slider_Min),
-                  Max         => GDouble (Ctrl.Slider_Max),
-                  Step        => GDouble (Ctrl.Slider_Step));
+                  Min         => Gdouble (Ctrl.Slider_Min),
+                  Max         => Gdouble (Ctrl.Slider_Max),
+                  Step        => Gdouble (Ctrl.Slider_Step));
 
                Scale.Set_Value (Gdouble (Ctrl.Default));
                Scale.Set_Vexpand (False);
@@ -179,10 +180,9 @@ package body Nael.Lab_GUI is
       Graphs_Vbox : Gtk_Vbox;
 
       User_Controls_Frame : Gtk_Frame;
+      Frame : Gtk_Frame;
       User_Controls_Vbox : Gtk_Vbox;
-      Pane   : Gtk_HBox;
-
-      Sample_Rate : Natural := 0;
+      Pane   : Gtk_Hbox;
 
       Addr_To_Id  : Address_To_Controller_Id_Map.Map;
 
@@ -194,6 +194,18 @@ package body Nael.Lab_GUI is
       Keyboard     : Nael.Lab_GUI.Keyboard_Widget.Keyboard;
       Pianoroll    : Nael.Lab_GUI.Pianoroll_Widget.Pianoroll;
 
+      -------------------------------------
+      -- Window_Size_Allocation_Callback --
+      -------------------------------------
+
+      procedure Window_Size_Allocation_Callback
+        (Self       : access Gtk_Widget_Record'Class;
+         Allocation : Gtk_Allocation)
+      is
+         pragma Unreferenced (Self);
+      begin
+         User_Controls_Vbox.Set_Size_Request (Allocation.Width / 3, -1);
+      end Window_Size_Allocation_Callback;
 
       --------------------
       -- Scale_Callback --
@@ -201,7 +213,7 @@ package body Nael.Lab_GUI is
 
       procedure Scale_Callback (Self : access Gtk_Range_Record'Class) is
          Int_Addr : constant Integer_Address := To_Integer (Self.all'Address);
-         Id : Constant Controller_Id := Addr_To_Id.Element (Int_Addr);
+         Id : constant Controller_Id := Addr_To_Id.Element (Int_Addr);
       begin
          Exchange.Set (Id, Float (Self.Get_Value));
       end Scale_Callback;
@@ -212,7 +224,7 @@ package body Nael.Lab_GUI is
 
       procedure Combo_Callback (Self : access Gtk_Combo_Box_Record'Class) is
          Int_Addr : constant Integer_Address := To_Integer (Self.all'Address);
-         Id : Constant Controller_Id := Addr_To_Id.Element (Int_Addr);
+         Id : constant Controller_Id := Addr_To_Id.Element (Int_Addr);
       begin
          Exchange.Set (Id, Float (Self.Get_Active));
       end Combo_Callback;
@@ -254,8 +266,12 @@ package body Nael.Lab_GUI is
 
          Window.Set_Title ("Nael Audio Experimentation Lab");
 
-         Gtk_New_HBox (Pane);
-         Pane.Set_Spacing (3);
+         --  Callback to set the size of the control vbox/frame
+         Window.On_Size_Allocate
+           (Window_Size_Allocation_Callback'Unrestricted_Access,
+            After => False);
+
+         Gtk_New_Hbox (Pane);
          Window.Add (Pane);
 
          Gtk_New (Graphs_Frame);
@@ -299,7 +315,7 @@ package body Nael.Lab_GUI is
          ----------------
 
          Gtk_New (User_Controls_Frame, "Controls");
-         Pane.Pack_Start (User_Controls_Frame, False, False);
+         Pane.Pack_Start (User_Controls_Frame, False, True);
          User_Controls_Frame.Set_Border_Width (3);
 
          Gtk_New_Vbox (User_Controls_Vbox);
@@ -320,7 +336,6 @@ package body Nael.Lab_GUI is
 
          GUI_Task.Exchange := Exchange;
          GUI_Task.Block_Exchange := Block_Exchange;
-         GUI_Task.Sample_Rate := Sample_Rate;
       end Start;
 
       --  Periodic callback

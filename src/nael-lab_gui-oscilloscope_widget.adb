@@ -1,5 +1,3 @@
-with Ada.Numerics.Elementary_Functions;
-
 with Glib.Object; use Glib.Object;
 with Glib; use Glib;
 with Gdk.Rectangle; use Gdk.Rectangle;
@@ -8,8 +6,6 @@ with Gtk.Drawing_Area; use Gtk.Drawing_Area;
 with Gtk.GRange; use Gtk.GRange;
 with Gtk.Scale; use Gtk.Scale;
 with Gtk.Enums; use Gtk.Enums;
-
-with Ada.Text_IO; use Ada.Text_IO;
 
 package body Nael.Lab_GUI.Oscilloscope_Widget is
 
@@ -20,7 +16,7 @@ package body Nael.Lab_GUI.Oscilloscope_Widget is
    -------------
 
    procedure Gtk_New (Widget      :    out Oscilloscope;
-                      Sample_Rate : in     Natural)
+                      Sample_Rate :        Natural)
    is
    begin
       Widget := new Oscilloscope_Record;
@@ -33,7 +29,7 @@ package body Nael.Lab_GUI.Oscilloscope_Widget is
 
    procedure Initialize
      (Widget      : not null access Oscilloscope_Record'Class;
-      Sample_Rate : in              Natural)
+      Sample_Rate :                 Natural)
    is
    begin
       Widget.Sample_Rate := Sample_Rate;
@@ -44,7 +40,6 @@ package body Nael.Lab_GUI.Oscilloscope_Widget is
       Widget.Set_Col_Spacings (3);
       Widget.Set_Row_Spacings (3);
 
-
       Gtk_New (Widget.DA);
       Attach (Widget, Widget.DA,
               1, 2,
@@ -53,13 +48,13 @@ package body Nael.Lab_GUI.Oscilloscope_Widget is
       --  Trigger Level Scale
       Gtk_New_With_Range (Widget.Trig_Lvl_Scale,
                           Orientation_Vertical,
-                          Min =>  -1.0, Max => 1.0, Step => 0.1);
+                          Min =>  -1.0, Max => 1.0, Step => 0.01);
       Widget.Trig_Lvl_Scale.Set_Value (Gdouble (Widget.Trigger_Level));
       Widget.Trig_Lvl_Scale.Set_Inverted (True);
       Attach (Widget, Widget.Trig_Lvl_Scale,
               0, 1,
               0, 1,
-              XOptions => Shrink);
+              Xoptions => Shrink);
 
       --  Zoom Scale
       Gtk_New_With_Range (Widget.Zoom_Scale,
@@ -70,7 +65,7 @@ package body Nael.Lab_GUI.Oscilloscope_Widget is
       Attach (Widget, Widget.Zoom_Scale,
               1, 2,
               1, 2,
-              YOptions => Shrink);
+              Yoptions => Shrink);
 
       --  Callbacks
 
@@ -241,18 +236,14 @@ package body Nael.Lab_GUI.Oscilloscope_Widget is
          Line_To (Context, Right, Top + Height / 2.0);
          Stroke (Context);
 
-
          Set_Source_Rgba (Context, 1.0, 0.0, 0.0, 1.0);
          Move_To (Context,
                   Left,
                   Lvl_To_Y (Osc.Buffer (Osc.Buffer'First)));
+
          for X in Osc.Buffer'First ..
            Osc.Buffer'First + Nbr_Of_Points - 1
          loop
-            --  Move_To (Context,
-            --           Left + (Gdouble (X) / Gdouble (Nbr_Of_Points)) * Width,
-            --           Lvl_To_Y (0.0));
-
             Line_To (Context,
                      Left + (Gdouble (X) / Gdouble (Nbr_Of_Points)) * Width,
                      Lvl_To_Y (Osc.Buffer (X)));

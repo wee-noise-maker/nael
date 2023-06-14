@@ -15,13 +15,13 @@ package body Nael.FFT is
                        return Complex_Vector is
       begin
          if N = 1 then
-            return (1..1 => X (X'First));
+            return (1 .. 1 => X (X'First));
          else
             declare
                use Ada.Numerics.Complex_Elementary_Functions;
-               F : constant Complex  := exp (Pi * j / Float (N / 2));
-               Even : Complex_Vector := FFT_In (X, N / 2, 2*S);
-               Odd  : Complex_Vector := FFT_In (X (X'First + S..X'Last),
+               F : constant Complex  := Exp (Pi * j / Float (N / 2));
+               Even : Complex_Vector := FFT_In (X, N / 2, 2 * S);
+               Odd  : Complex_Vector := FFT_In (X (X'First + S .. X'Last),
                                                 N / 2,
                                                 2 * S);
             begin
@@ -30,11 +30,11 @@ package body Nael.FFT is
                      T : constant Complex := Odd (Odd'First + K) / F ** K;
                   begin
                      Odd  (Odd'First  + K) := Even (Even'First + K) - T;
-                  Even (Even'First + K) := Even (Even'First + K) + T;
+                     Even (Even'First + K) := Even (Even'First + K) + T;
                   end;
                end loop;
                return Even & Odd;
-         end;
+            end;
          end if;
       end FFT_In;
    begin

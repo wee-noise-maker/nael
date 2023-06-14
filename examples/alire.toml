@@ -8,8 +8,11 @@ maintainers-logins = ["Fabien-Chouteau"]
 
 executables = ["examples"]
 [[depends-on]]
-nael = "~0.1.0-dev"
+resources = "~0.1.0"
+nael = "*"
+
 [[pins]]
 nael = { path='..' }
-[[depends-on]]
-resources = "~0.1.0"
+
+[build-profiles]
+nael = "development"

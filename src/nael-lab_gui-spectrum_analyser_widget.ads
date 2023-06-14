@@ -1,5 +1,3 @@
-with Ada.Numerics.Complex_Arrays;
-
 with Gtk.Widget; use Gtk.Widget;
 
 with Nael.Frame_Exchange;
@@ -19,11 +17,11 @@ private package Nael.Lab_GUI.Spectrum_Analyser_Widget is
    type Spectrum_Analyser is access all Spectrum_Analyser_Record'Class;
 
    procedure Gtk_New (Widget      :    out Spectrum_Analyser;
-                      Sample_Rate : in     Natural);
+                      Sample_Rate :        Natural);
 
    procedure Initialize
      (Widget      : not null access Spectrum_Analyser_Record'Class;
-      Sample_Rate : in              Natural);
+      Sample_Rate :                 Natural);
 
    procedure Push_Frame (Widget : in out Spectrum_Analyser_Record;
                          Frame  :        Mono_Frame);

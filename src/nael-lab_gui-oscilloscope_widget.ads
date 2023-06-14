@@ -1,17 +1,11 @@
-with Ada.Numerics.Complex_Arrays;
-
 with Gtk.Widget; use Gtk.Widget;
 
-with Nael.Frame_Exchange;
-
-private with Gtk.Marshallers;
 private with Gtk.Table;
 private with Gtk.Drawing_Area;
 private with Gtk.Scale;
 private with Cairo;
 private with Glib;
 private with Gtk.Handlers;
-private with Nael.FFT;
 
 private package Nael.Lab_GUI.Oscilloscope_Widget is
 
@@ -22,11 +16,11 @@ private package Nael.Lab_GUI.Oscilloscope_Widget is
    type Oscilloscope is access all Oscilloscope_Record'Class;
 
    procedure Gtk_New (Widget      :    out Oscilloscope;
-                      Sample_Rate : in     Natural);
+                      Sample_Rate :        Natural);
 
    procedure Initialize
      (Widget      : not null access Oscilloscope_Record'Class;
-      Sample_Rate : in              Natural);
+      Sample_Rate :                 Natural);
 
    procedure Push_Frame (Widget : in out Oscilloscope_Record;
                          Frame  :        Mono_Frame);
@@ -51,7 +45,7 @@ private
       Mode  : Osc_Mode  := Continous;
       State : Trigger_State := Waiting_For_Trigger;
 
-      Trigger_Level    : Float := 0.5;
+      Trigger_Level    : Float := 0.05;
       Prev_Frame       : Mono_Frame := 0.0;
       Hold_Off         : Float := 0.4;
       Hold_Off_Counter : Natural := 7_000;

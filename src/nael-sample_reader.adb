@@ -44,7 +44,8 @@ package body Nael.Sample_Reader is
 
          Last := Buffer'First + (Len / 2) - 1;
          for Index in Buffer'First .. Last loop
-            Buffer (Index) := Float (In_Buffer (Index)) / Float (Integer_16'Last);
+            Buffer (Index) := Float (In_Buffer (Index)) /
+              Float (Integer_16'Last);
          end loop;
 
          if Last /= Buffer'Last then

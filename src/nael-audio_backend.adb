@@ -5,7 +5,6 @@ with GNAT.OS_Lib;
 with System;
 with Interfaces.C;
 
-
 package body Nael.Audio_Backend is
 
    type Stereo_Frame is record

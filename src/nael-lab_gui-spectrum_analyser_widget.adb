@@ -4,8 +4,6 @@ with Glib.Object; use Glib.Object;
 with Glib; use Glib;
 with Gdk.Rectangle; use Gdk.Rectangle;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body Nael.Lab_GUI.Spectrum_Analyser_Widget is
 
    Class : Ada_GObject_Class := Uninitialized_Class;
@@ -15,7 +13,7 @@ package body Nael.Lab_GUI.Spectrum_Analyser_Widget is
    -------------
 
    procedure Gtk_New (Widget      :    out Spectrum_Analyser;
-                      Sample_Rate : in     Natural)
+                      Sample_Rate :        Natural)
    is
    begin
       Widget := new Spectrum_Analyser_Record;
@@ -28,7 +26,7 @@ package body Nael.Lab_GUI.Spectrum_Analyser_Widget is
 
    procedure Initialize
      (Widget      : not null access Spectrum_Analyser_Record'Class;
-      Sample_Rate : in              Natural)
+      Sample_Rate :                 Natural)
    is
    begin
       G_New (Widget, Spectrum_Analyser_Widget.Get_Type);
@@ -120,7 +118,6 @@ package body Nael.Lab_GUI.Spectrum_Analyser_Widget is
             Widget.Peak_Energy (Index) :=
               Widget.Peak_Energy (Index) * 0.98;
 
-
             --  Check for new peak
             if Local_Average > Widget.Peak_Energy (Index) then
                Widget.Peak_Energy (Index) := Local_Average;
@@ -173,7 +170,8 @@ package body Nael.Lab_GUI.Spectrum_Analyser_Widget is
             if F <= Min_Freq then
                return 0.0;
             end if;
-            return Gdouble (Log (F - Min_Freq, 2.0) / Log (Range_Freq, 2.0)) * Width;
+            return Gdouble
+              (Log (F - Min_Freq, 2.0) / Log (Range_Freq, 2.0)) * Width;
          end Freq_Offset;
 
          ---------------
@@ -194,12 +192,8 @@ package body Nael.Lab_GUI.Spectrum_Analyser_Widget is
          ------------------
 
          function Bin_X_Offset (N : Bin_Range) return Gdouble is
-            Ret : constant Gdouble := Freq_Offset (Widget.Bin_Frequency (N));
          begin
-            --  Ada.Text_IO.Put_Line ("Bin " & N'Img &
-            --                          " Freq:" &  Widget.Bin_Frequency (N)'Img &
-            --                          " Offset: " & Ret'Img);
-            return Ret;
+            return Freq_Offset (Widget.Bin_Frequency (N));
          end Bin_X_Offset;
 
          --------------------
@@ -228,8 +222,6 @@ package body Nael.Lab_GUI.Spectrum_Analyser_Widget is
          ------------------
 
          procedure Draw_Db_Line (Db : Float) is
-            use Ada.Numerics;
-
             Y : constant Gdouble := Db_Offset (Db);
          begin
 
