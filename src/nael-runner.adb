@@ -36,12 +36,10 @@ package body Nael.Runner is
    --------------------
 
    procedure Audio_Callback (Buffer : out Block) is
+      use Nael.Value_Exchange;
    begin
       if G_Exp /= null then
-         G_Exp.Render (G_Sample_Rate,
-                       Buffer,
-                       G_Val_Exchange,
-                       G_MIDI_Exchange);
+         G_Exp.Render (G_Sample_Rate, Buffer, G_Val_Exchange);
 
          --  Hard Clipping
          for Elt of Buffer loop
@@ -76,8 +74,7 @@ package body Nael.Runner is
       Lab.Start (Sample_Rate,
                  User_Controls,
                  G_Val_Exchange'Access,
-                 G_Block_Exchange'Access,
-                 G_MIDI_Exchange'Access);
+                 G_Block_Exchange'Access);
 
       Nael.Audio_Backend.Start (Sample_Rate,
                                 Block_Size,
