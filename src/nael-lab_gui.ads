@@ -97,7 +97,7 @@ private
    type Instance
    is tagged limited
            record
-              GUI_T             : GUI_Task;
+              GUI_T : GUI_Task;
            end record;
 
 end Nael.Lab_GUI;

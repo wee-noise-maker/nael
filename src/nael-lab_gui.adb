@@ -25,6 +25,10 @@ with Gtk.Widget; use Gtk.Widget;
 
 package body Nael.Lab_GUI is
 
+   package User_Control_Frame_Vectors
+   is new Ada.Containers.Indefinite_Vectors (Controller_Id,
+                                             Gtk_Frame);
+
    ----------
    -- Hash --
    ----------
@@ -106,6 +110,7 @@ package body Nael.Lab_GUI is
 
    procedure Add_User_Control
      (Addr_To_Id  : in out Address_To_Controller_Id_Map.Map;
+      Frames      : in out User_Control_Frame_Vectors.Vector;
       Box         :        Gtk_Hbox;
       Id          :        Controller_Id;
       Ctrl        :        User_Control_Info;
@@ -165,6 +170,7 @@ package body Nael.Lab_GUI is
             end;
       end case;
 
+      Frames.Append (Frame);
       Exchange.Set (Id, Ctrl.Default);
       Addr_To_Id.Insert (Addr, Id);
    end Add_User_Control;
@@ -193,6 +199,8 @@ package body Nael.Lab_GUI is
       Oscilloscope : Nael.Lab_GUI.Oscilloscope_Widget.Oscilloscope;
       Keyboard     : Nael.Lab_GUI.Keyboard_Widget.Keyboard;
       Pianoroll    : Nael.Lab_GUI.Pianoroll_Widget.Pianoroll;
+
+      Ctrl_Frames  : User_Control_Frame_Vectors.Vector;
 
       -------------------------------------
       -- Window_Size_Allocation_Callback --
@@ -236,8 +244,19 @@ package body Nael.Lab_GUI is
       function Timeout_Callback return Boolean is
          use Frame_Exchange;
 
-         Block : Block_Access;
+         Block   : Block_Access;
+         Label   : Nael.Value_Exchange.Label_Info;
+         Success : Boolean;
       begin
+
+         loop
+            Exchange.Pop_Label (Label, Success);
+            exit when not Success;
+
+            Ctrl_Frames (Label.Id).Set_Label
+              (Ada.Strings.Unbounded.To_String (Label.Label));
+         end loop;
+
          loop
             Block_Exchange.Pop (Block);
             exit when Block = null;
@@ -326,6 +345,7 @@ package body Nael.Lab_GUI is
              User_Controls.Controls.Last_Index
          loop
             Add_User_Control (Addr_To_Id,
+                              Ctrl_Frames,
                               User_Controls_Vbox,
                               Index,
                               User_Controls.Controls.Element (Index),
