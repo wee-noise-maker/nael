@@ -17,6 +17,8 @@ package Nael.Lab_GUI is
    procedure Enable_Keyboard (This : in out User_Control_Setup);
    procedure Enable_Pianoroll (This : in out User_Control_Setup);
 
+   procedure Add_Separator (This : in out User_Control_Setup);
+
    function Add_Slider (This           : in out User_Control_Setup;
                         Name           :        String;
                         Min, Max, Step :        Float;
@@ -27,6 +29,11 @@ package Nael.Lab_GUI is
                            Name           :        String;
                            Values         :        AAA.Strings.Vector)
                            return Controller_Id;
+
+   function Add_Switch (This           : in out User_Control_Setup;
+                        Name           :        String;
+                        Default        :        Boolean)
+                        return Controller_Id;
 
    type Instance
    is tagged limited
@@ -44,7 +51,7 @@ package Nael.Lab_GUI is
 
 private
 
-   type User_Control_Kind is (Slider, Drop_Down);
+   type User_Control_Kind is (Slider, Drop_Down, Switch, Separator);
 
    type User_Control_Info (Kind : User_Control_Kind := Slider) is record
       Name : Ada.Strings.Unbounded.Unbounded_String;
@@ -54,6 +61,8 @@ private
             Slider_Min, Slider_Max, Slider_Step : Float;
          when Drop_Down =>
             Drop_Values : AAA.Strings.Vector;
+         when Switch | Separator =>
+            null;
       end case;
    end record;
 

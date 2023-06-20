@@ -11,6 +11,8 @@ with Gtk.Enums;           use Gtk.Enums;
 with Gtk.Combo_Box_Text;  use Gtk.Combo_Box_Text;
 with Gtk.Combo_Box;       use Gtk.Combo_Box;
 with Gtk.GRange;          use Gtk.GRange;
+with Gtk.Switch;          use Gtk.Switch;
+with Gtk.Separator;       use Gtk.Separator;
 with Glib; use Glib;
 with Glib.Main;
 
@@ -104,6 +106,33 @@ package body Nael.Lab_GUI is
       return This.Controls.Last_Index;
    end Add_Drop_Down;
 
+   ----------------
+   -- Add_Switch --
+   ----------------
+
+   function Add_Switch (This           : in out User_Control_Setup;
+                        Name           :        String;
+                        Default        :        Boolean)
+                        return Controller_Id
+   is
+   begin
+      This.Controls.Append ((Kind    => Switch,
+                             Default => (if Default then 1.0 else 0.0),
+                             Name        => To_Unbounded_String (Name)));
+      return This.Controls.Last_Index;
+   end Add_Switch;
+
+   -------------------
+   -- Add_Separator --
+   -------------------
+
+   procedure Add_Separator (This : in out User_Control_Setup) is
+   begin
+      This.Controls.Append ((Kind    => Separator,
+                             Default => 0.0,
+                             Name    => To_Unbounded_String ("")));
+   end Add_Separator;
+
    ----------------------
    -- Add_User_Control --
    ----------------------
@@ -116,7 +145,8 @@ package body Nael.Lab_GUI is
       Ctrl        :        User_Control_Info;
       Exchange    : in out Value_Exchange.Instance;
       Scale_CB    :        Cb_Gtk_Range_Void;
-      Combo_CB    :        Cb_Gtk_Combo_Box_Void)
+      Combo_CB    :        Cb_Gtk_Combo_Box_Void;
+      Switch_CB   :        Cb_Gtk_Switch_Boolean_Boolean)
    is
       Frame : Gtk_Frame;
 
@@ -167,6 +197,30 @@ package body Nael.Lab_GUI is
                Drop.On_Changed (Combo_CB);
 
                Addr := To_Integer (Drop.all'Address);
+            end;
+
+         when Switch =>
+            declare
+               Switch : Gtk_Switch;
+            begin
+               Gtk_New (Switch);
+               Switch.Set_Active (Ctrl.Default > 0.5);
+
+               Switch.Set_Halign (Align_Center);
+               Switch.Set_Valign (Align_Center);
+               Frame.Add (Switch);
+
+               Switch.On_State_Set (Switch_CB);
+
+               Addr := To_Integer (Switch.all'Address);
+            end;
+
+         when Separator =>
+            declare
+               Sep : Gtk_Separator;
+            begin
+               Gtk_New_Hseparator (Sep);
+               Frame.Add (Sep);
             end;
       end case;
 
@@ -236,6 +290,20 @@ package body Nael.Lab_GUI is
       begin
          Exchange.Set (Id, Float (Self.Get_Active));
       end Combo_Callback;
+
+      ---------------------
+      -- Switch_Callback --
+      ---------------------
+
+      function Switch_Callback (Self  : access Gtk_Switch_Record'Class;
+                                State : Boolean) return Boolean
+      is
+         Int_Addr : constant Integer_Address := To_Integer (Self.all'Address);
+         Id : constant Controller_Id := Addr_To_Id.Element (Int_Addr);
+      begin
+         Exchange.Set (Id, (if State then 1.0 else 0.0));
+         return True;
+      end Switch_Callback;
 
       ----------------------
       -- Timeout_Callback --
@@ -344,14 +412,16 @@ package body Nael.Lab_GUI is
            User_Controls.Controls.First_Index ..
              User_Controls.Controls.Last_Index
          loop
-            Add_User_Control (Addr_To_Id,
-                              Ctrl_Frames,
-                              User_Controls_Vbox,
-                              Index,
-                              User_Controls.Controls.Element (Index),
-                              Exchange.all,
-                              Scale_CB => Scale_Callback'Unrestricted_Access,
-                              Combo_CB => Combo_Callback'Unrestricted_Access);
+            Add_User_Control
+              (Addr_To_Id,
+               Ctrl_Frames,
+               User_Controls_Vbox,
+               Index,
+               User_Controls.Controls.Element (Index),
+               Exchange.all,
+               Scale_CB  => Scale_Callback'Unrestricted_Access,
+               Combo_CB  => Combo_Callback'Unrestricted_Access,
+               Switch_CB => Switch_Callback'Unrestricted_Access);
          end loop;
 
          GUI_Task.Exchange := Exchange;
