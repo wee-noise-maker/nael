@@ -13,6 +13,7 @@ with Gtk.Combo_Box;       use Gtk.Combo_Box;
 with Gtk.GRange;          use Gtk.GRange;
 with Gtk.Switch;          use Gtk.Switch;
 with Gtk.Separator;       use Gtk.Separator;
+with Gtk.Scrolled_Window; use Gtk.Scrolled_Window;
 with Glib; use Glib;
 with Glib.Main;
 
@@ -241,6 +242,7 @@ package body Nael.Lab_GUI is
 
       User_Controls_Frame : Gtk_Frame;
       Frame : Gtk_Frame;
+      User_Controls_Scroll : Gtk_Scrolled_Window;
       User_Controls_Vbox : Gtk_Vbox;
       Pane   : Gtk_Hbox;
 
@@ -405,8 +407,14 @@ package body Nael.Lab_GUI is
          Pane.Pack_Start (User_Controls_Frame, False, True);
          User_Controls_Frame.Set_Border_Width (3);
 
+         Gtk_New (User_Controls_Scroll);
+         User_Controls_Scroll.Set_Policy
+           (Hscrollbar_Policy => Gtk.Enums.Policy_Never,
+            Vscrollbar_Policy => Gtk.Enums.Policy_Automatic);
+         User_Controls_Frame.Add (User_Controls_Scroll);
+
          Gtk_New_Vbox (User_Controls_Vbox);
-         User_Controls_Frame.Add (User_Controls_Vbox);
+         User_Controls_Scroll.Add (User_Controls_Vbox);
 
          for Index in
            User_Controls.Controls.First_Index ..
