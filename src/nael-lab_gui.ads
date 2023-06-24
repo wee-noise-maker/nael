@@ -14,6 +14,9 @@ package Nael.Lab_GUI is
    type User_Control_Setup
    is tagged limited private;
 
+   procedure Set_Experiment_Title (This : in out User_Control_Setup;
+                                   Title : String);
+
    procedure Enable_Keyboard (This : in out User_Control_Setup);
    procedure Enable_Pianoroll (This : in out User_Control_Setup);
 
@@ -72,6 +75,10 @@ private
 
    type User_Control_Setup
    is tagged limited record
+      Title : Ada.Strings.Unbounded.Unbounded_String :=
+        Ada.Strings.Unbounded.To_Unbounded_String
+          ("Nael Audio Experimentation Lab");
+
       Controls : User_Control_Info_Vectors.Vector;
       Keyboard_Enabled : Boolean := False;
       Pianoroll_Enabled : Boolean := False;

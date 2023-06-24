@@ -52,6 +52,17 @@ package body Nael.Lab_GUI is
                              return Boolean
    is (A = B);
 
+   --------------------------
+   -- Set_Experiment_Title --
+   --------------------------
+
+   procedure Set_Experiment_Title (This : in out User_Control_Setup;
+                                   Title : String)
+   is
+   begin
+      This.Title := To_Unbounded_String (Title);
+   end Set_Experiment_Title;
+
    ---------------------
    -- Enable_Keyboard --
    ---------------------
@@ -353,7 +364,7 @@ package body Nael.Lab_GUI is
 
          Gtk.Window.Gtk_New (Window);
 
-         Window.Set_Title ("Nael Audio Experimentation Lab");
+         Window.Set_Title (To_String (User_Controls.Title));
 
          --  Callback to set the size of the control vbox/frame
          Window.On_Size_Allocate
