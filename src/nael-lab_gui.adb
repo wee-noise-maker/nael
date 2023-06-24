@@ -170,7 +170,7 @@ package body Nael.Lab_GUI is
       Frame.Set_Vexpand (False);
       Frame.Set_Hexpand (False);
 
-      Box.Add (Frame);
+      Box.Pack_Start (Frame, Fill => False, Expand => False);
 
       case Ctrl.Kind is
          when Slider =>
