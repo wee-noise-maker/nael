@@ -46,11 +46,16 @@ private
    type Key_State is array (Key_Range) of Boolean;
    type State_Matrix is array (Step_Range) of Key_State;
 
+   task type Sequencer_Task is
+      entry Start (PR : not null Pianoroll);
+      entry Stop;
+   end Sequencer_Task;
+   type Sequencer_Task_Access is access all Sequencer_Task;
+
    type Pianoroll_Record
    is new Gtk.Box.Gtk_Vbox_Record
    with record
       State : State_Matrix := (others => (others => False));
-      Notes_On : Key_State := (others => False);
 
       MIDI_Ex : MIDI_Exchange.Any_Access := null;
 
@@ -62,9 +67,14 @@ private
 
       Play : Gtk.Toggle_Button.Gtk_Toggle_Button;
       BPM_Scale : Gtk.Scale.Gtk_Scale;
-      BPM : Positive := 110;
+
+      BPM : Positive := 110 with Atomic;
+      Playing : Boolean := False with Atomic;
+
       Next_Trigger : Ada.Real_Time.Time := Ada.Real_Time.Time_Last;
       Next_Step    : Step_Range := Step_Range'First;
+
+      Seq_Task : Sequencer_Task_Access := null;
    end record;
 
    package Widget_Callback

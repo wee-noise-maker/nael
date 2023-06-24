@@ -162,7 +162,7 @@ package body Nael.Lab_GUI is
    is
       Frame : Gtk_Frame;
 
-      Addr : Integer_Address;
+      Addr : Integer_Address := 0;
 
    begin
       Gtk_New (Frame, To_String (Ctrl.Name));
@@ -233,6 +233,7 @@ package body Nael.Lab_GUI is
             begin
                Gtk_New_Hseparator (Sep);
                Frame.Add (Sep);
+               Addr := To_Integer (Sep.all'Address);
             end;
       end case;
 

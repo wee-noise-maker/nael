@@ -1,3 +1,5 @@
+with Ada.Unchecked_Deallocation;
+
 with MIDI; use MIDI;
 
 with Glib.Object; use Glib.Object;
@@ -34,6 +36,66 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       others => False);
 
    Class : Ada_GObject_Class := Uninitialized_Class;
+
+   --------------------
+   -- Sequencer_Task --
+   --------------------
+
+   task body Sequencer_Task is
+      use Ada.Real_Time;
+
+      PR : Pianoroll := null;
+
+      Next_Trigger : Ada.Real_Time.Time := Ada.Real_Time.Time_Last;
+      Next_Step    : Step_Range := Step_Range'First;
+      Notes_On : Key_State := (others => False);
+
+      Exit_Request : Boolean := False;
+   begin
+      accept Start (PR : not null Pianoroll) do
+         Sequencer_Task.PR := PR;
+      end Start;
+
+      Next_Trigger := Clock;
+
+      while not Exit_Request loop
+         select
+            delay until Next_Trigger;
+         or
+            accept Stop do
+               Exit_Request := True;
+            end Stop;
+         end select;
+
+         Next_Trigger := Next_Trigger +
+           Milliseconds ((60 * 1000) / (PR.BPM * 4));
+
+         for Key in Key_Range loop
+            if Notes_On (Key) then
+               PR.MIDI_Ex.Push ((Kind => Note_Off,
+                                 Chan => 0,
+                                 Key  => Key,
+                                 Velocity => 127));
+            end if;
+         end loop;
+
+         if PR.Playing then
+
+            Notes_On := PR.State (Next_Step);
+
+            for Key in Key_Range loop
+               if Notes_On (Key) then
+                  PR.MIDI_Ex.Push ((Kind => Note_On,
+                                    Chan => 0,
+                                    Key  => Key,
+                                    Velocity => 127));
+               end if;
+            end loop;
+
+            Next_Step := Next_Step + 1;
+         end if;
+      end loop;
+   end Sequencer_Task;
 
    ----------------
    -- On_DA_Draw --
@@ -132,51 +194,10 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       --  On the first rezise, scroll to the middle of the roll
       if Widget.Scroll_To_Center then
          Widget.Scroll.Get_Vadjustment.Set_Value
-           (Gdouble (Allocation.Height) / 2.5);
+           (Gdouble (Allocation.Height) / 5.0);
          Widget.Scroll_To_Center := False;
       end if;
    end On_Size_Allocate;
-
-   ----------------------
-   -- Timeout_Callback --
-   ----------------------
-
-   function Timeout_Callback (Widget : Pianoroll) return Boolean is
-      use Ada.Real_Time;
-      use MIDI;
-   begin
-      if Clock >= Widget.Next_Trigger then
-         Widget.Next_Trigger := Widget.Next_Trigger +
-           Milliseconds ((60 * 1000) / (Widget.BPM * 4));
-
-         for Key in Key_Range loop
-            if Widget.Notes_On (Key) then
-               Widget.MIDI_Ex.Push ((Kind => Note_Off,
-                                     Chan => 0,
-                                     Key  => Key,
-                                     Velocity => 127));
-            end if;
-         end loop;
-
-         if Widget.Play.Get_Active then
-
-            Widget.Notes_On := Widget.State (Widget.Next_Step);
-
-            for Key in Key_Range loop
-               if Widget.Notes_On (Key) then
-                  Widget.MIDI_Ex.Push ((Kind => Note_On,
-                                        Chan => 0,
-                                        Key  => Key,
-                                        Velocity => 127));
-               end if;
-            end loop;
-
-            Widget.Next_Step := Widget.Next_Step + 1;
-         end if;
-      end if;
-
-      return True;
-   end Timeout_Callback;
 
    ------------------
    -- BPM_Callback --
@@ -200,6 +221,40 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       Pianoroll_Widget.Initialize (Widget, MIDI_Ex);
    end Gtk_New;
 
+   -------------
+   -- Destroy --
+   -------------
+
+   procedure Destroy (Self : access Gtk_Widget_Record'Class) is
+      Widget : Pianoroll_Record renames Pianoroll_Record (Self.all);
+
+      procedure Free
+      is new Ada.Unchecked_Deallocation (Sequencer_Task,
+                                         Sequencer_Task_Access);
+   begin
+      if Widget.Seq_Task /= null then
+         Widget.Seq_Task.Stop;
+
+         while not Widget.Seq_Task'Terminated loop
+            delay 0.001;
+         end loop;
+
+         Free (Widget.Seq_Task);
+
+      end if;
+   end Destroy;
+
+   ---------------------
+   -- On_Play_Toggled --
+   ---------------------
+
+   procedure On_Play_Toggled (Self : access Glib.Object.GObject_Record'Class)
+   is
+      Widget : Pianoroll_Record renames Pianoroll_Record (Self.all);
+   begin
+      Widget.Playing := Widget.Play.Get_Active;
+   end On_Play_Toggled;
+
    ----------------
    -- Initialize --
    ----------------
@@ -218,6 +273,7 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       Widget.Pack_Start (Control_Hbox, Expand => False);
 
       Gtk_New (Widget.Play, "Play");
+      Widget.Play.On_Toggled (On_Play_Toggled'Access, Widget.all'Access);
       Control_Hbox.Pack_Start (Widget.Play, Expand => False);
 
       Gtk_New (Frame, "BPM");
@@ -258,22 +314,15 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
 
       Widget.MIDI_Ex := MIDI_Ex;
 
-      Widget.State (0)(MIDI.C4) := True;
-      Widget.State (4)(MIDI.C4) := True;
-      Widget.State (8)(MIDI.C4) := True;
-      Widget.State (12)(MIDI.C4) := True;
+      Widget.State (0)(MIDI.C2) := True;
+      Widget.State (4)(MIDI.C2) := True;
+      Widget.State (8)(MIDI.C2) := True;
+      Widget.State (12)(MIDI.C2) := True;
 
-      --  Periodic callback
-      declare
-         Unused : Glib.Main.G_Source_Id;
-      begin
-         Unused := Pianoroll_Source.Timeout_Add
-           (1,
-            Timeout_Callback'Access,
-            Pianoroll (Widget));
+      Widget.Seq_Task := new Sequencer_Task;
+      Widget.Seq_Task.Start (Widget.all'Access);
 
-         Widget.Next_Trigger := Ada.Real_Time.Clock;
-      end;
+      Widget.On_Destroy (Destroy'Access);
    end Initialize;
 
    --------------
