@@ -2,6 +2,9 @@ name = "nael"
 description = "Nael Audio Experimentation Lab"
 version = "0.1.0-dev"
 
+licenses = "MIT OR Apache-2.0 WITH LLVM-exception"
+tags = ["audio", "synthesis"]
+website = "https://weenoisemaker.com/"
 authors = ["Fabien Chouteau"]
 maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
 maintainers-logins = ["Fabien-Chouteau"]
@@ -12,5 +15,6 @@ aaa = "~0.2.6"
 
 [environment.'case(distribution)'.msys2.CPLUS_INCLUDE_PATH]
 append = "${DISTRIB_ROOT}/mingw64/include"
+
 [[depends-on]]
 midi = "~0.2.0"
