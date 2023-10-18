@@ -107,12 +107,13 @@ package body Nael.Lab_GUI is
 
    function Add_Drop_Down (This           : in out User_Control_Setup;
                            Name           :        String;
-                           Values         :        AAA.Strings.Vector)
+                           Values         :        AAA.Strings.Vector;
+                           Default        :        Natural := 0)
                            return Controller_Id
    is
    begin
       This.Controls.Append ((Kind        => Drop_Down,
-                             Default     => 0.0,
+                             Default     => Float (Default),
                              Name        => To_Unbounded_String (Name),
                              Drop_Values => Values));
       return This.Controls.Last_Index;
@@ -202,7 +203,7 @@ package body Nael.Lab_GUI is
                   Drop.Append_Text (Elt);
                end loop;
 
-               Drop.Set_Active (0);
+               Drop.Set_Active (Gint (Ctrl.Default));
 
                Frame.Add (Drop);
 

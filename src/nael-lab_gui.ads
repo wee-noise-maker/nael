@@ -30,7 +30,8 @@ package Nael.Lab_GUI is
 
    function Add_Drop_Down (This           : in out User_Control_Setup;
                            Name           :        String;
-                           Values         :        AAA.Strings.Vector)
+                           Values         :        AAA.Strings.Vector;
+                           Default        :        Natural := 0)
                            return Controller_Id;
 
    function Add_Switch (This           : in out User_Control_Setup;

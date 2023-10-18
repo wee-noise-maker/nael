@@ -4,8 +4,9 @@ package body Nael.Lab_GUI.Enum_Drop_Util is
    -- Add_Drop_Down --
    -------------------
 
-   function Add_Drop_Down (Ctrl : in out User_Control_Setup'Class;
-                           Name :        String)
+   function Add_Drop_Down (Ctrl    : in out User_Control_Setup'Class;
+                           Name    :        String;
+                           Default :        Enum_Type := Enum_Type'First)
                            return Controller_Id
    is
       Values : AAA.Strings.Vector := AAA.Strings.Empty_Vector;
@@ -14,16 +15,17 @@ package body Nael.Lab_GUI.Enum_Drop_Util is
          Values.Append (Elt'Img);
       end loop;
 
-      return Ctrl.Add_Drop_Down (Name, Values);
+      return Ctrl.Add_Drop_Down (Name, Values, Default => Default'Enum_Rep);
    end Add_Drop_Down;
 
    -------------------
    -- Add_Drop_Down --
    -------------------
 
-   function Add_Drop_Down (Ctrl  : in out User_Control_Setup'Class;
-                           Name  :        String;
-                           Image :        Image_Function)
+   function Add_Drop_Down (Ctrl    : in out User_Control_Setup'Class;
+                           Name    :        String;
+                           Image   :        Image_Function;
+                           Default :        Enum_Type := Enum_Type'First)
                            return Controller_Id
    is
       Values : AAA.Strings.Vector := AAA.Strings.Empty_Vector;
@@ -32,7 +34,7 @@ package body Nael.Lab_GUI.Enum_Drop_Util is
          Values.Append (Image (Elt));
       end loop;
 
-      return Ctrl.Add_Drop_Down (Name, Values);
+      return Ctrl.Add_Drop_Down (Name, Values, Default => Default'Enum_Rep);
    end Add_Drop_Down;
 
    ----------------

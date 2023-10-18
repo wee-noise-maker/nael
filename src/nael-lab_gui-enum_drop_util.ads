@@ -2,17 +2,19 @@ generic
    type Enum_Type is (<>);
 package Nael.Lab_GUI.Enum_Drop_Util is
 
-   function Add_Drop_Down (Ctrl : in out User_Control_Setup'Class;
-                           Name :        String)
+   function Add_Drop_Down (Ctrl    : in out User_Control_Setup'Class;
+                           Name    :        String;
+                           Default :        Enum_Type := Enum_Type'First)
                            return Controller_Id;
    --  Add a drop down control for the values of Enum_Type
 
    type Image_Function
    is not null access function (E : Enum_Type) return String;
 
-   function Add_Drop_Down (Ctrl  : in out User_Control_Setup'Class;
-                           Name  :        String;
-                           Image :        Image_Function)
+   function Add_Drop_Down (Ctrl    : in out User_Control_Setup'Class;
+                           Name    :        String;
+                           Image   :        Image_Function;
+                           Default :        Enum_Type := Enum_Type'First)
                            return Controller_Id;
    --  Add a drop down control for the values of Enum_Type, with a custom
    --  function to convert enumaration values to string representation.
