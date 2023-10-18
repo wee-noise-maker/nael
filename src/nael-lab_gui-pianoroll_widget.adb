@@ -10,6 +10,7 @@ with Gdk.Event;
 with Gtk.Box;             use Gtk.Box;
 with Gtk.Frame;           use Gtk.Frame;
 with Gtk.Toggle_Button;   use Gtk.Toggle_Button;
+with Gtk.Button;          use Gtk.Button;
 with Gtk.Enums;           use Gtk.Enums;
 with Gtk.Drawing_Area;    use Gtk.Drawing_Area;
 with Gtk.Scrolled_Window; use Gtk.Scrolled_Window;
@@ -141,7 +142,8 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
             Y : constant Integer := Integer (Event.Y);
 
             Step : constant Integer := (X / Cell_Width) - 1;
-            Key : constant Integer := (Y / Cell_Height) - 1;
+            Key : constant Integer :=
+              Integer (Key_Range'Last) - (Y / Cell_Height) + 1;
          begin
             if Step in Integer (Step_Range'First) .. Integer (Step_Range'Last)
               and then
@@ -194,7 +196,7 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       --  On the first rezise, scroll to the middle of the roll
       if Widget.Scroll_To_Center then
          Widget.Scroll.Get_Vadjustment.Set_Value
-           (Gdouble (Allocation.Height) / 5.0);
+           (Gdouble (Allocation.Height) / 2.2);
          Widget.Scroll_To_Center := False;
       end if;
    end On_Size_Allocate;
@@ -255,6 +257,107 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       Widget.Playing := Widget.Play.Get_Active;
    end On_Play_Toggled;
 
+   ---------------------
+   -- Clear_All_Steps --
+   ---------------------
+
+   procedure Clear_All_Steps
+     (Widget : in out Pianoroll_Record'Class;
+      Cr     : Cairo.Cairo_Context)
+   is
+   begin
+      for K in Key_Range loop
+         for S in Step_Range loop
+            if Widget.State (S)(K) then
+               Widget.State (S)(K) := False;
+               Draw_Step (Widget, Cr, S, K, False);
+            end if;
+         end loop;
+      end loop;
+   end Clear_All_Steps;
+
+   --------------
+   -- Set_Step --
+   --------------
+
+   procedure Set_Step
+     (Widget : in out Pianoroll_Record'Class;
+      Cr     : Cairo.Cairo_Context;
+      Key    : Key_Range;
+      Step   : Step_Range)
+   is
+   begin
+      Widget.State (Step)(Key) := True;
+      Draw_Step (Widget, Cr, Step, Key, True);
+   end Set_Step;
+
+   -------------------
+   -- Scroll_To_Key --
+   -------------------
+
+   procedure Scroll_To_Key (Widget : in out Pianoroll_Record'Class;
+                            Key    : Key_Range)
+   is
+      Height      : constant Gdouble := Gdouble (Widget.Surface_Height);
+      Cell_Height : constant Gdouble := Gdouble (Height / Gdouble (Nbr_Keys));
+   begin
+      Widget.Scroll.Get_Vadjustment.Set_Value
+        ((Gdouble (Key_Range'Last) - Gdouble (Key)) * Cell_Height);
+   end Scroll_To_Key;
+
+   --------------------------
+   -- On_Bass_Line_Pressed --
+   --------------------------
+
+   procedure On_Bass_Line_Pressed
+     (Self : access Glib.Object.GObject_Record'Class)
+   is
+      Widget : Pianoroll_Record renames Pianoroll_Record (Self.all);
+      Cr : Cairo.Cairo_Context := Create (Widget.Surface);
+   begin
+      Clear_All_Steps (Widget, Cr);
+
+      Set_Step (Widget, Cr, C2, 0);
+      Set_Step (Widget, Cr, C2, 4);
+      Set_Step (Widget, Cr, C2, 8);
+      Set_Step (Widget, Cr, C3, 11);
+      Set_Step (Widget, Cr, C2, 12);
+
+      Scroll_To_Key (Widget, C3);
+
+      Widget.DA.Queue_Draw;
+   end On_Bass_Line_Pressed;
+
+   ----------------------------
+   -- On_Lead_Melody_Pressed --
+   ----------------------------
+
+   procedure On_Lead_Melody_Pressed
+     (Self : access Glib.Object.GObject_Record'Class)
+   is
+      Widget : Pianoroll_Record renames Pianoroll_Record (Self.all);
+      Cr : Cairo.Cairo_Context := Create (Widget.Surface);
+   begin
+      Clear_All_Steps (Widget, Cr);
+
+      Set_Step (Widget, Cr, C4, 0);
+      Set_Step (Widget, Cr, G4, 2);
+      Set_Step (Widget, Cr, Gs4, 3);
+
+      Set_Step (Widget, Cr, D4, 5);
+      Set_Step (Widget, Cr, D4, 6);
+      Set_Step (Widget, Cr, D4, 7);
+
+      Set_Step (Widget, Cr, D4, 9);
+
+      Set_Step (Widget, Cr, Ds4, 11);
+      Set_Step (Widget, Cr, F4, 13);
+
+      Scroll_To_Key (Widget, A4);
+
+      Widget.DA.Queue_Draw;
+   end On_Lead_Melody_Pressed;
+
    ----------------
    -- Initialize --
    ----------------
@@ -285,6 +388,19 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       Widget.BPM_Scale.On_Value_Changed (BPM_Callback'Access, Widget);
       Frame.Add (Widget.BPM_Scale);
 
+      --  Preset patterns --
+      Gtk_New (Widget.Bass_Line, "Bass");
+      Widget.Bass_Line.On_Pressed (On_Bass_Line_Pressed'Access,
+                                   Widget.all'Access);
+      Control_Hbox.Pack_Start (Widget.Bass_Line, Expand => False);
+
+      Gtk_New (Widget.Melody, "Lead");
+      Widget.Melody.On_Pressed (On_Lead_Melody_Pressed'Access,
+                                Widget.all'Access);
+      Control_Hbox.Pack_Start (Widget.Melody, Expand => False);
+
+      ---------------------
+
       Gtk_New (Widget.Scroll);
       Widget.Scroll.Set_Policy (Hscrollbar_Policy => Gtk.Enums.Policy_Never,
                                 Vscrollbar_Policy => Gtk.Enums.Policy_Always);
@@ -314,10 +430,8 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
 
       Widget.MIDI_Ex := MIDI_Ex;
 
-      Widget.State (0)(MIDI.C2) := True;
-      Widget.State (4)(MIDI.C2) := True;
-      Widget.State (8)(MIDI.C2) := True;
-      Widget.State (12)(MIDI.C2) := True;
+      --  Start with a preset pattern
+      On_Lead_Melody_Pressed (Widget);
 
       Widget.Seq_Task := new Sequencer_Task;
       Widget.Seq_Task.Start (Widget.all'Access);
@@ -358,6 +472,11 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
 
       Margin : constant := 1.0 * Line_Width;
 
+      Cell_Top : constant Gdouble :=
+        (Gdouble (Key_Range'Last) - Gdouble (Key) + 1.0) * Cell_Height;
+
+      Cell_Left : constant Gdouble :=
+        (Gdouble (Step) + 1.0) * Cell_Width;
    begin
       if State then
          Set_Source_Rgb (Cr, 0.0, 1.0, 0.0);
@@ -370,8 +489,8 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       end if;
 
       Rectangle (Cr,
-                 X      => (Gdouble (Step) + 1.0) * Cell_Width + Margin,
-                 Y      => (Gdouble (Key) + 1.0) * Cell_Height + Margin,
+                 X      => Cell_Left + Margin,
+                 Y      => Cell_Top + Margin,
                  Width  => Cell_Width - 2.0 * Margin,
                  Height => Cell_Height - 2.0 * Margin);
       Cairo.Fill (Cr);
@@ -390,6 +509,8 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
         Gdouble (Width / Gdouble (Nbr_Steps + 1));
       Cell_Height : constant Gdouble := Gdouble (Height / Gdouble (Nbr_Keys));
 
+      Cell_Top : Gdouble;
+
    begin
       if Widget.Surface /= Null_Surface then
 
@@ -407,9 +528,12 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
                Set_Source_Rgb (Cr, 1.0, 1.0, 1.0);
             end if;
 
+            Cell_Top :=
+              (Gdouble (Key_Range'Last) - Gdouble (Key) + 1.0) * Cell_Height;
+
             Rectangle (Cr,
                        X      => 0.0,
-                       Y      => (Gdouble (Key) + 1.0) * Cell_Height,
+                       Y      => Cell_Top,
                        Width  => Cell_Width,
                        Height => Cell_Height);
             Cairo.Fill (Cr);
@@ -419,7 +543,7 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
 
                Rectangle (Cr,
                           X      => Cell_Width,
-                          Y      => (Gdouble (Key) + 1.0) * Cell_Height,
+                          Y      => Cell_Top,
                           Width  => Width,
                           Height => Cell_Height);
                Cairo.Fill (Cr);
@@ -429,7 +553,7 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
                Set_Source_Rgb (Cr, 0.0, 0.0, 0.0);
             end if;
 
-            Move_To (Cr, 0.0, (Gdouble (Key) + 1.7) * Cell_Height);
+            Move_To (Cr, 0.0, Cell_Top + 0.6 * Cell_Height);
             Show_Text (Cr, Key_Img (Key));
          end loop;
 
