@@ -67,7 +67,7 @@ private
       Surface_Width, Surface_Height : Glib.Gint;
 
       Play : Gtk.Toggle_Button.Gtk_Toggle_Button;
-      Bass_Line, Melody : Gtk.Button.Gtk_Button;
+      Bass_Line, Acid_Line, Melody : Gtk.Button.Gtk_Button;
       BPM_Scale : Gtk.Scale.Gtk_Scale;
 
       BPM : Positive := 110 with Atomic;

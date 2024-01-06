@@ -328,6 +328,40 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       Widget.DA.Queue_Draw;
    end On_Bass_Line_Pressed;
 
+   --------------------------
+   -- On_Acid_Line_Pressed --
+   --------------------------
+
+   procedure On_Acid_Line_Pressed
+     (Self : access Glib.Object.GObject_Record'Class)
+   is
+      Widget : Pianoroll_Record renames Pianoroll_Record (Self.all);
+      Cr : Cairo.Cairo_Context := Create (Widget.Surface);
+   begin
+      Clear_All_Steps (Widget, Cr);
+
+      Set_Step (Widget, Cr, Gs2, 0);
+      Set_Step (Widget, Cr, As4, 1);
+      Set_Step (Widget, Cr, G3, 2);
+      Set_Step (Widget, Cr, F4, 3);
+      Set_Step (Widget, Cr, Ds3, 4);
+      Set_Step (Widget, Cr, C2, 5);
+      --  Set_Step (Widget, Cr, C2, 6);
+      --  Set_Step (Widget, Cr, C2, 7);
+      Set_Step (Widget, Cr, Ds4, 8);
+      Set_Step (Widget, Cr, Ds2, 9);
+      Set_Step (Widget, Cr, F4, 10);
+      Set_Step (Widget, Cr, G4, 11);
+      Set_Step (Widget, Cr, As2, 12);
+      Set_Step (Widget, Cr, G2, 13);
+      Set_Step (Widget, Cr, C2, 14);
+      Set_Step (Widget, Cr, G3, 15);
+
+      Scroll_To_Key (Widget, C3);
+
+      Widget.DA.Queue_Draw;
+   end On_Acid_Line_Pressed;
+
    ----------------------------
    -- On_Lead_Melody_Pressed --
    ----------------------------
@@ -393,6 +427,11 @@ package body Nael.Lab_GUI.Pianoroll_Widget is
       Widget.Bass_Line.On_Pressed (On_Bass_Line_Pressed'Access,
                                    Widget.all'Access);
       Control_Hbox.Pack_Start (Widget.Bass_Line, Expand => False);
+
+      Gtk_New (Widget.Acid_Line, "Acid");
+      Widget.Acid_Line.On_Pressed (On_Acid_Line_Pressed'Access,
+                                   Widget.all'Access);
+      Control_Hbox.Pack_Start (Widget.Acid_Line, Expand => False);
 
       Gtk_New (Widget.Melody, "Lead");
       Widget.Melody.On_Pressed (On_Lead_Melody_Pressed'Access,
